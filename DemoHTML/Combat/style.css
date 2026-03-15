@@ -1,0 +1,58 @@
+/* 重置基础样式并禁用移动端原生滚动行为 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* 防止页面整体滑动 */
+    touch-action: none; /* 禁用下拉刷新等手势 */
+}
+
+/* 游戏 UI 区域（占据上半部分） */
+#game-ui {
+    flex: 1;
+    padding: 20px;
+}
+
+#game-ui h2 {
+    color: #00ffcc;
+    margin-bottom: 10px;
+}
+
+/* 虚拟控制台区域（固定在下半部分） */
+#console-container {
+    height: 45vh; /* 占据屏幕下方 45% 的空间 */
+    background-color: #000;
+    border-top: 2px solid #333;
+    display: flex;
+    flex-direction: column;
+}
+
+#console-header {
+    background-color: #222;
+    color: #888;
+    font-size: 12px;
+    padding: 5px 10px;
+    text-align: center;
+}
+
+#console-output {
+    flex: 1;
+    overflow-y: auto; /* 允许内部独立滚动 */
+    padding: 10px;
+    font-family: monospace;
+    font-size: 13px;
+    color: #00ff00; /* 极客绿 */
+    line-height: 1.4;
+}
+
+.log-warn { color: #ffcc00; }
+.log-error { color: #ff3333; }
