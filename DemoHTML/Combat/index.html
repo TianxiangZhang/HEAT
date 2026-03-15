@@ -9,40 +9,58 @@
 <body>
     <div id="game-ui">
         <h2>HEAT 战斗原型 V1.0</h2>
-        <p style="color: #888; margin-bottom: 15px;">Phase 4: 热量管理与全局熔断验证</p>
+        <p style="color: #888; margin-bottom: 10px;">Phase 5: 实体对抗与伤害结算</p>
         
-        <div style="background: #1a1a20; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-bottom: 15px;">
-            <h3 style="color: #00ffcc; margin-bottom: 10px; font-size: 16px;">模块控制：测试动能机炮</h3>
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px;">
+        <div style="background: #1a0f14; padding: 12px; border-radius: 8px; border: 1px solid #551133; margin-bottom: 10px;">
+            <h3 style="color: #ff3366; margin-bottom: 8px; font-size: 15px;">敌舰 (Target) - 雨燕级靶机</h3>
+            <div style="margin-bottom: 8px;">
+                <label style="display: block; margin-bottom: 3px; font-size: 12px;">
+                    能量护盾 (Shield): <span id="enemy-shield-val" style="color:#00aaff; font-weight:bold;">200</span> / 200
+                </label>
+                <progress id="enemy-shield-bar" value="200" max="200" style="width: 100%; height: 12px; accent-color: #00aaff;"></progress>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 3px; font-size: 12px;">
+                    全局结构值 (Hull): <span id="enemy-hp-val" style="color:#00ffcc; font-weight:bold;">800</span> / 800
+                </label>
+                <progress id="enemy-hp-bar" value="800" max="800" style="width: 100%; height: 12px; accent-color: #00ffcc;"></progress>
+            </div>
+        </div>
+
+        <div style="background: #0f1a14; padding: 12px; border-radius: 8px; border: 1px solid #115533; margin-bottom: 10px;">
+            <h3 style="color: #33ff66; margin-bottom: 8px; font-size: 15px;">本舰 (Player) - 状态监控</h3>
+            <div style="margin-bottom: 8px; display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 3px; font-size: 12px;">护盾 (Shield)</label>
+                    <progress id="player-shield-bar" value="200" max="200" style="width: 100%; height: 12px; accent-color: #00aaff;"></progress>
+                </div>
+                <div style="flex: 1;">
+                    <label style="display: block; margin-bottom: 3px; font-size: 12px;">结构 (Hull)</label>
+                    <progress id="player-hp-bar" value="800" max="800" style="width: 100%; height: 12px; accent-color: #00ffcc;"></progress>
+                </div>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 3px; font-size: 12px;">
+                    武器舱热量 (Heat): <span id="player-heat-val" style="color:#ffcc00; font-weight:bold;">0</span> / 150
+                </label>
+                <progress id="player-heat-bar" value="0" max="150" style="width: 100%; height: 12px; accent-color: #ffcc00;"></progress>
+            </div>
+        </div>
+
+        <div style="background: #1a1a20; padding: 12px; border-radius: 8px; border: 1px solid #333;">
+            <h3 style="color: #00ffcc; margin-bottom: 8px; font-size: 15px;">武器控制：动能机炮 (对敌开火)</h3>
+            <div style="margin-bottom: 10px;">
+                <label style="display: block; margin-bottom: 5px; font-size: 13px;">
                     分配功率 (Pin): <span id="power-val" style="color:#fff; font-weight:bold;">10</span> MW
                 </label>
                 <input type="range" id="power-slider" min="0" max="40" step="1" value="10" style="width: 100%;" 
                        oninput="document.getElementById('power-val').innerText = this.value">
             </div>
             <div>
-                <label style="display: block; margin-bottom: 5px;">当前充能 (Capacitor):</label>
-                <progress id="charge-bar" value="0" max="30" style="width: 100%; height: 20px;"></progress>
-            </div>
-        </div>
-
-        <div style="background: #2a1010; padding: 15px; border-radius: 8px; border: 1px solid #551111;">
-            <h3 style="color: #ff4444; margin-bottom: 10px; font-size: 16px;">舰船状态监控</h3>
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px;">
-                    武器舱热量 (Heat): <span id="heat-val" style="color:#ffcc00; font-weight:bold;">0</span> / 150
-                </label>
-                <progress id="heat-bar" value="0" max="150" style="width: 100%; height: 20px;"></progress>
-            </div>
-            <div>
-                <label style="display: block; margin-bottom: 5px;">
-                    全局结构值 (Hull): <span id="hp-val" style="color:#00ffcc; font-weight:bold;">800</span> / 800
-                </label>
-                <progress id="hp-bar" value="800" max="800" style="width: 100%; height: 20px;"></progress>
+                <progress id="charge-bar" value="0" max="30" style="width: 100%; height: 12px; accent-color: #ffaa00;"></progress>
             </div>
         </div>
     </div>
-
 
     <div id="console-container">
         <div id="console-header">=== 战术终端输出 (Log) ===</div>
