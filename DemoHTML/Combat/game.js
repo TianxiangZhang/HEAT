@@ -1,5 +1,5 @@
 // ==========================================
-// 1. 虚拟控制台劫持
+// 1. 虚拟控制台劫持 (已修复对象打印)
 // ==========================================
 const consoleOutput = document.getElementById('console-output');
 const originalLog = console.log;
@@ -8,73 +8,71 @@ const originalError = console.error;
 
 function appendToConsole(msg, className = '') {
     const logLine = document.createElement('div');
-    // 如果是对象，将其转换为易读的字符串格式
-    if (typeof msg === 'object') {
-        logLine.textContent = JSON.stringify(msg, null, 2);
-    } else {
-        logLine.textContent = msg;
-    }
+    // 如果消息本身含有换行符（如 JSON.stringify 输出），保留其格式
+    logLine.style.whiteSpace = 'pre-wrap'; 
+    logLine.textContent = msg;
     if (className) logLine.classList.add(className);
     consoleOutput.appendChild(logLine);
     consoleOutput.scrollTop = consoleOutput.scrollHeight; 
 }
 
+// 修复点：在 join 之前，提前把对象 Stringify
+function formatArgs(args) {
+    return args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg).join(' ');
+}
+
 console.log = function(...args) {
     originalLog.apply(console, args);
-    appendToConsole(args.join(' '));
+    appendToConsole(formatArgs(args));
 };
 console.warn = function(...args) {
     originalWarn.apply(console, args);
-    appendToConsole(args.join(' '), 'log-warn');
+    appendToConsole(formatArgs(args), 'log-warn');
 };
 console.error = function(...args) {
     originalError.apply(console, args);
-    appendToConsole(args.join(' '), 'log-error');
+    appendToConsole(formatArgs(args), 'log-error');
 };
 
 // ==========================================
-// 2. Phase 2: 实体类定义 (Entity Classes)
+// 2. 实体类定义 (保持不变)
 // ==========================================
 class Module {
     constructor(name, standardPower, capacity, baseHeat) {
         this.name = name;
-        this.standardPower = standardPower; // MW (标称工作功率)
-        this.capacity = capacity;           // MJ (额定充能阈值)
-        this.baseHeat = baseHeat;           // 基础单次产热
-        this.currentCharge = 0;             // 当前充能
+        this.standardPower = standardPower; 
+        this.capacity = capacity;           
+        this.baseHeat = baseHeat;           
+        this.currentCharge = 0;             
     }
 }
 
 class Compartment {
     constructor(name, hp, heatBuffer, dissipationRate) {
         this.name = name;
-        this.hp = hp;                       // 局部结构值
-        this.heatBuffer = heatBuffer;       // 热容上限
-        this.dissipationRate = dissipationRate; // 局部散热效率
-        this.currentHeat = 0;               // 当前热量
-        this.modules = [];                  // 挂载的模块列表
+        this.hp = hp;                       
+        this.heatBuffer = heatBuffer;       
+        this.dissipationRate = dissipationRate; 
+        this.currentHeat = 0;               
+        this.modules = [];                  
     }
-    addModule(mod) {
-        this.modules.push(mod);
-    }
+    addModule(mod) { this.modules.push(mod); }
 }
 
 class Ship {
     constructor(name, globalHp, cpu, maxPower, baseSignature) {
         this.name = name;
-        this.globalHp = globalHp;           // 全局结构值
-        this.cpu = cpu;                     // 总算力
-        this.maxPower = maxPower;           // 反应堆总功率
-        this.baseSignature = baseSignature; // 基础信号半径
+        this.globalHp = globalHp;           
+        this.cpu = cpu;                     
+        this.maxPower = maxPower;           
+        this.baseSignature = baseSignature; 
         this.compartments = [];
     }
-    addCompartment(comp) {
-        this.compartments.push(comp);
-    }
+    addCompartment(comp) { this.compartments.push(comp); }
 }
 
 // ==========================================
-// 3. 核心引擎类
+// 3. 核心引擎类 (新增 Phase 3 开火逻辑)
 // ==========================================
 class GameEngine {
     constructor() {
@@ -82,13 +80,13 @@ class GameEngine {
         this.isRunning = false;
         this.tickInterval = null;
         this.playerShip = null;
+        this.testCannon = null; // 用于快速引用的测试武器
     }
 
     start() {
         if (this.isRunning) return;
         this.isRunning = true;
-        console.log("🚀 HEAT 底层逻辑引擎初始化...");
-        console.log(`⏱️ 设定 Tick 频率: ${window.CONFIG.TICK_RATE} Hz`);
+        console.log("🚀 HEAT 底层引擎启动...");
         
         this.initTestShip();
 
@@ -97,51 +95,65 @@ class GameEngine {
         }, window.CONFIG.TICK_INTERVAL_MS);
     }
 
-    // 初始化测试靶机与静态拓扑
     initTestShip() {
-        console.log("🛠️ 开始构建测试靶机：雨燕级轻型护卫舰...");
-        
-        // 1. 创建舰船本身
         this.playerShip = new Ship("雨燕级", 800, 100, 55, 30);
-        
-        // 2. 创建武器舱
         const weaponBay = new Compartment("武器舱", 800, 150, 20);
         
-        // 3. 挂载 2 门动能机炮 (标称 10MW, 射速 3s 算出阈值 30MJ, 设基础产热 15)
-        const cannon1 = new Module("动能机炮(左)", 10, 30, 15);
-        const cannon2 = new Module("动能机炮(右)", 10, 30, 15);
-        
-        weaponBay.addModule(cannon1);
-        weaponBay.addModule(cannon2);
+        // 挂载 1 门主测试机炮
+        this.testCannon = new Module("测试动能机炮", 10, 30, 15);
+        weaponBay.addModule(this.testCannon);
         this.playerShip.addCompartment(weaponBay);
 
-        console.log("✅ 测试靶机装配完成!");
+        console.log("✅ 靶机装配完成，数据如下：");
         console.log(this.playerShip);
-    }
-
-    stop() {
-        this.isRunning = false;
-        clearInterval(this.tickInterval);
-        console.warn("⏸️ 引擎已暂停");
     }
 
     tick() {
         this.tickCount++;
-        // 为了避免刷屏太快导致手机端卡顿，这里改成每 10 个 Tick（即1秒）输出一次心跳
-        if (this.tickCount % 10 === 0) {
-            console.log(`Tick: [${this.tickCount}] - 系统心跳正常`);
+        
+        // 1. 获取 UI 上的分配功率 (Pin)
+        const powerSlider = document.getElementById('power-slider');
+        if (!powerSlider) return; // UI还没加载完时跳过
+        const pIn = parseFloat(powerSlider.value);
+        
+        // 2. 计算有效功率 (P_eff) 和 浪费功率 (P_waste)
+        let pEff = 0;
+        let pWaste = 0;
+        if (pIn <= this.testCannon.standardPower) {
+            pEff = pIn;
+        } else {
+            pEff = this.testCannon.standardPower + (pIn - this.testCannon.standardPower) * window.CONFIG.GLOBAL_OVERLOAD_EFFICIENCY;
         }
+        pWaste = pIn - pEff;
+
+        // 3. 增加充能 (每 Tick 增加 P_eff * 0.1秒)
+        const chargeIncrement = pEff * (window.CONFIG.TICK_INTERVAL_MS / 1000);
+        this.testCannon.currentCharge += chargeIncrement;
+
+        // 4. 更新 UI 进度条
+        const chargeBar = document.getElementById('charge-bar');
+        if (chargeBar) {
+            chargeBar.value = this.testCannon.currentCharge;
+        }
+
+        // 5. 触发开火判定
+        if (this.testCannon.currentCharge >= this.testCannon.capacity) {
+            this.fireWeapon(pEff, pWaste);
+        }
+    }
+
+    fireWeapon(pEff, pWaste) {
+        // 清零充能
+        this.testCannon.currentCharge = 0;
+        
+        // 计算实际运作周期 T (用于后续热量计算)
+        const actualT = this.testCannon.capacity / pEff;
+        
+        console.warn(`🔥 动能机炮开火！[有效功率: ${pEff.toFixed(1)} MW | 实际射速: ${actualT.toFixed(2)} 秒/发]`);
     }
 }
 
-// ==========================================
-// 4. 页面启动器
-// ==========================================
 window.onload = () => {
-    try {
-        const engine = new GameEngine();
-        engine.start();
-    } catch (e) {
-        console.error("引擎启动失败:", e.message);
-    }
+    const engine = new GameEngine();
+    engine.start();
 };
