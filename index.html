@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HEAT - Prototype Hub</title>
+    <style>
+        /* 基础重置与科幻暗黑风格 */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: #0a0a0c;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* 标题区域 */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            margin-top: 20px;
+            width: 100%;
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+        }
+        h1 {
+            color: #00ffcc;
+            font-size: 28px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        p.subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* 导航卡片网格 */
+        .nav-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 400px; /* 适配手机，在平板上也不会太宽 */
+        }
+
+        /* 独立的入口按钮卡片 */
+        .nav-card {
+            background-color: #1a1a20;
+            border: 1px solid #333;
+            border-left: 4px solid #00ffcc;
+            border-radius: 6px;
+            padding: 20px;
+            text-decoration: none;
+            display: block;
+            transition: all 0.2s ease;
+        }
+        
+        /* 交互反馈 */
+        .nav-card:active {
+            background-color: #2a2a35;
+            transform: scale(0.98);
+        }
+
+        .card-title {
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .card-status {
+            font-size: 12px;
+            color: #ffcc00;
+            background: rgba(255, 204, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .card-desc {
+            color: #aaa;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        /* 未来的占位卡片样式 */
+        .nav-card.locked {
+            border-left-color: #555;
+            opacity: 0.6;
+            pointer-events: none; /* 暂时禁用点击 */
+        }
+        .nav-card.locked .card-status {
+            color: #888;
+            background: rgba(136, 136, 136, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>HEAT</h1>
+        <p class="subtitle">System Architecture & Prototype Hub</p>
+    </header>
+
+    <div class="nav-grid">
+        <a href="Demo_HTML/Combat/index.html" class="nav-card">
+            <div class="card-title">
+                战斗系统验证 (Combat)
+                <span class="card-status">Phase 1</span>
+            </div>
+            <div class="card-desc">
+                功率流调度、无CD开火、热量熔断与多普勒信号博弈。
+            </div>
+        </a>
+
+        <a href="#" class="nav-card locked">
+            <div class="card-title">
+                Loot 经济模拟 (Economy)
+                <span class="card-status">Plan</span>
+            </div>
+            <div class="card-desc">
+                模块损毁度、综合健康度 (MHS) 与战后清算系统验证。
+            </div>
+        </a>
+        
+        <a href="#" class="nav-card locked">
+            <div class="card-title">
+                舰队 SOP 逻辑 (AI & SOP)
+                <span class="card-status">Plan</span>
+            </div>
+            <div class="card-desc">
+                全自动交火逻辑链预设与边缘 UI 战术指挥官高维介入。
+            </div>
+        </a>
+    </div>
+
+</body>
+</html>
