@@ -9,23 +9,36 @@
 <body>
     <div id="game-ui">
         <h2>HEAT 战斗原型 V1.0</h2>
-        <p style="color: #888; margin-bottom: 15px;">Phase 3: 能源分配与开火逻辑验证</p>
+        <p style="color: #888; margin-bottom: 15px;">Phase 4: 热量管理与全局熔断验证</p>
         
-        <div style="background: #1a1a20; padding: 15px; border-radius: 8px; border: 1px solid #333;">
+        <div style="background: #1a1a20; padding: 15px; border-radius: 8px; border: 1px solid #333; margin-bottom: 15px;">
             <h3 style="color: #00ffcc; margin-bottom: 10px; font-size: 16px;">模块控制：测试动能机炮</h3>
-            
             <div style="margin-bottom: 15px;">
                 <label style="display: block; margin-bottom: 5px;">
                     分配功率 (Pin): <span id="power-val" style="color:#fff; font-weight:bold;">10</span> MW
                 </label>
-                <input type="range" id="power-slider" min="0" max="20" step="1" value="10" style="width: 100%;" 
+                <input type="range" id="power-slider" min="0" max="40" step="1" value="10" style="width: 100%;" 
                        oninput="document.getElementById('power-val').innerText = this.value">
             </div>
-            
             <div>
                 <label style="display: block; margin-bottom: 5px;">当前充能 (Capacitor):</label>
                 <progress id="charge-bar" value="0" max="30" style="width: 100%; height: 20px;"></progress>
-                <div style="font-size: 12px; color: #888; margin-top: 5px; text-align: right;">额定阈值: 30 MJ</div>
+            </div>
+        </div>
+
+        <div style="background: #2a1010; padding: 15px; border-radius: 8px; border: 1px solid #551111;">
+            <h3 style="color: #ff4444; margin-bottom: 10px; font-size: 16px;">舰船状态监控</h3>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">
+                    武器舱热量 (Heat): <span id="heat-val" style="color:#ffcc00; font-weight:bold;">0</span> / 150
+                </label>
+                <progress id="heat-bar" value="0" max="150" style="width: 100%; height: 20px;"></progress>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 5px;">
+                    全局结构值 (Hull): <span id="hp-val" style="color:#00ffcc; font-weight:bold;">800</span> / 800
+                </label>
+                <progress id="hp-bar" value="800" max="800" style="width: 100%; height: 20px;"></progress>
             </div>
         </div>
     </div>
