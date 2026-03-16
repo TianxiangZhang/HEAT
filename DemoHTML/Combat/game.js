@@ -55,13 +55,13 @@ class GameEngine {
         this.tickCount = 0; this.isRunning = false; this.tickInterval = null;
         this.playerShip = null; this.playerBay = null; this.playerCannon = null;
         this.enemyShip = null; this.enemyBay = null;
-        this.currentResolution = 100; // 当前火控解析度
+        this.currentResolution = 100;
     }
 
     start() {
         if (this.isRunning) return;
         this.isRunning = true;
-        console.log("🚀 HEAT 引擎启动：多普勒雷达已上线...");
+        console.log("🚀 HEAT 引擎启动：精准雷达公式加载完毕...");
         this.initBattle();
         this.tickInterval = setInterval(() => { this.tick(); }, window.CONFIG.TICK_INTERVAL_MS);
     }
@@ -73,7 +73,6 @@ class GameEngine {
         this.playerBay.addModule(this.playerCannon);
         this.playerShip.addCompartment(this.playerBay);
 
-        // 敌舰基础信号半径为 30
         this.enemyShip = new Ship("敌方-靶机", 800, 100, 55, 30, 200, 10);
         this.enemyBay = new Compartment("核心舱", 800, 150, 20, 0.2);
         this.enemyShip.addCompartment(this.enemyBay);
@@ -90,29 +89,38 @@ class GameEngine {
         this.tickCount++;
         const dt = window.CONFIG.TICK_INTERVAL_MS / 1000; 
 
-        // ---- Phase 6 核心：信号博弈与解析度计算 ----
+        // ---- Phase 6 核心：严格依据设计案公式解算雷达 ----
         const distSlider = document.getElementById('dist-slider');
         const speedSlider = document.getElementById('speed-slider');
         if (distSlider && speedSlider) {
             const distance = parseFloat(distSlider.value);
             const targetSpeed = parseFloat(speedSlider.value);
 
-            // 1. 多普勒扰动系数 (航速 <= 100 时为 1，超过则线性增长)
-            const dopplerFactor = Math.max(1, targetSpeed / window.CONFIG.DOPPLER_THRESHOLD);
+            const radarStrength = 15;        // 通用雷达强度
+            const maxLockRange = 3000;       // 最远锁定距离
+            const bandMatch = 1.0;           // 频段匹配 (默认区间内)
+
+            // 1. 多普勒扰动系数 = V_threshold / MAX(V_current, V_threshold)
+            const dopplerFactor = window.CONFIG.DOPPLER_THRESHOLD / Math.max(targetSpeed, window.CONFIG.DOPPLER_THRESHOLD);
             
-            // 2. 有效信号半径被大幅度压制
-            const effectiveSig = this.enemyShip.baseSignature / dopplerFactor;
+            // 2. 距离断崖惩罚：1.0 (射程内)；若超出射程 = (最远锁定距离 / 实际距离)^2
+            let distancePenalty = 1.0;
+            if (distance > maxLockRange) {
+                distancePenalty = Math.pow(maxLockRange / distance, 2);
+            }
+
+            // 3. 有效锁定值 = (雷达解析强度 * 频段匹配 * 距离惩罚 * 目标信号半径) * 多普勒扰动系数
+            const effectiveLockValue = (radarStrength * bandMatch * distancePenalty * this.enemyShip.baseSignature) * dopplerFactor;
             
-            // 3. 计算最终解析度 (3000 为本原型中的火控常数，用于数值映射)
-            let resolution = (effectiveSig / distance) * 3000;
-            this.currentResolution = Math.min(100, Math.max(0, resolution));
+            // 4. 最终解析度 = 有效锁定值 / (有效锁定值 + 100)
+            const resolutionValue = (effectiveLockValue / (effectiveLockValue + 100)) * 100;
+            this.currentResolution = Math.min(100, Math.max(0, resolutionValue));
         }
 
-        // ---- 武器充能 ----
+        // ---- 武器充能与热量管理 (保持不变) ----
         const powerSlider = document.getElementById('power-slider');
         if (!powerSlider) return; 
         const pIn = parseFloat(powerSlider.value);
-        
         let pEff = pIn <= this.playerCannon.standardPower ? pIn : this.playerCannon.standardPower + (pIn - this.playerCannon.standardPower) * window.CONFIG.GLOBAL_OVERLOAD_EFFICIENCY;
         let pWaste = pIn - pEff;
 
@@ -121,7 +129,6 @@ class GameEngine {
             this.fireWeapon(pEff, pWaste);
         }
 
-        // ---- 热量与熔断 ----
         this.playerBay.currentHeat = Math.max(0, this.playerBay.currentHeat - this.playerBay.dissipationRate * dt);
         if (this.playerBay.currentHeat > this.playerBay.heatBuffer) {
             const excessHeat = this.playerBay.currentHeat - this.playerBay.heatBuffer;
@@ -141,13 +148,11 @@ class GameEngine {
         const heatGenerated = this.playerCannon.baseHeat + (pWaste * window.CONFIG.GLOBAL_WASTE_TO_HEAT_COEFF * actualT);
         this.playerBay.currentHeat += heatGenerated;
 
-        // ---- Phase 6 核心：脱靶判定 ----
         if (this.currentResolution < 20) {
             console.warn(`💨 信号丢失！解析度仅为 ${this.currentResolution.toFixed(1)}%，火控脱锁，攻击偏离！`);
             return; 
         }
 
-        // 引入 RNG (随机掷骰) 判断最终命中概率
         const roll = Math.random() * 100;
         if (roll > this.currentResolution) {
             console.warn(`🎲 差之毫厘！(解析度 ${this.currentResolution.toFixed(1)}%，掷出 ${roll.toFixed(1)})`);
@@ -199,13 +204,11 @@ class GameEngine {
         const chargeBar = document.getElementById('charge-bar');
         if (chargeBar) chargeBar.value = this.playerCannon.currentCharge;
 
-        // 更新传感器解析度 UI
         const resBar = document.getElementById('res-bar');
         const resVal = document.getElementById('res-val');
         if (resBar) resBar.value = this.currentResolution;
         if (resVal) {
             resVal.innerText = this.currentResolution.toFixed(1);
-            // 动态变色反馈：<20% 红字脱锁，<80% 黄字警告，>80% 绿字稳定
             if (this.currentResolution < 20) resVal.style.color = '#ff3333';
             else if (this.currentResolution < 80) resVal.style.color = '#ffcc00';
             else resVal.style.color = '#00ffcc';
