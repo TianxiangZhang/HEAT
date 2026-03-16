@@ -9,7 +9,7 @@
 <body>
     <div id="game-ui">
         <h2 style="font-size: 18px;">HEAT 战斗原型 V1.0</h2>
-        <p style="color: #888; font-size: 12px; margin-bottom: 10px;">Phase 6: 信号博弈与动态多普勒</p>
+        <p style="color: #888; font-size: 12px; margin-bottom: 10px;">Phase 6: 修正版雷达火控公式验证</p>
         
         <div style="display: flex; gap: 10px; margin-bottom: 10px;">
             <div style="flex: 1; background: #1a0f14; padding: 10px; border-radius: 8px; border: 1px solid #551133;">
@@ -25,25 +25,27 @@
         </div>
 
         <div style="background: #101520; padding: 12px; border-radius: 8px; border: 1px solid #224466; margin-bottom: 10px;">
-            <h3 style="color: #66ccff; margin-bottom: 10px; font-size: 14px;">空间传感器 (雷达火控)</h3>
+            <h3 style="color: #66ccff; margin-bottom: 10px; font-size: 14px;">空间传感器 (通用雷达)</h3>
             
             <div style="margin-bottom: 8px;">
                 <label style="display: block; margin-bottom: 2px; font-size: 12px; color: #aaa;">
-                    相对距离 (Distance): <span id="dist-val" style="color:#fff;">1000</span> m
+                    相对距离: <span id="dist-val" style="color:#fff;">2000</span> m 
+                    <span style="color:#557799;">(雷达射程: 3000m)</span>
                 </label>
-                <input type="range" id="dist-slider" min="500" max="8000" step="100" value="1000" style="width: 100%; accent-color: #66ccff;" oninput="document.getElementById('dist-val').innerText = this.value">
+                <input type="range" id="dist-slider" min="500" max="8000" step="100" value="2000" style="width: 100%; accent-color: #66ccff;" oninput="document.getElementById('dist-val').innerText = this.value">
             </div>
             
             <div style="margin-bottom: 12px;">
                 <label style="display: block; margin-bottom: 2px; font-size: 12px; color: #aaa;">
-                    敌方绝对航速 (Velocity): <span id="speed-val" style="color:#fff;">50</span> m/s (阈值: 100)
+                    敌方绝对航速: <span id="speed-val" style="color:#fff;">250</span> m/s 
+                    <span style="color:#557799;">(多普勒阈值: 100)</span>
                 </label>
-                <input type="range" id="speed-slider" min="0" max="1000" step="10" value="50" style="width: 100%; accent-color: #ffaa00;" oninput="document.getElementById('speed-val').innerText = this.value">
+                <input type="range" id="speed-slider" min="0" max="1000" step="10" value="250" style="width: 100%; accent-color: #ffaa00;" oninput="document.getElementById('speed-val').innerText = this.value">
             </div>
 
             <div>
                 <label style="display: block; margin-bottom: 2px; font-size: 12px; color: #aaa;">
-                    锁定解析度 (Resolution): <span id="res-val" style="color:#00ffcc; font-weight:bold;">100</span>%
+                    锁定解析度: <span id="res-val" style="color:#00ffcc; font-weight:bold;">100</span>%
                 </label>
                 <progress id="res-bar" value="100" max="100" style="width: 100%; height: 10px; accent-color: #00ffcc;"></progress>
             </div>
@@ -54,14 +56,12 @@
                 <h3 style="color: #00ffcc; font-size: 14px;">武器控制: 动能机炮</h3>
                 <span style="font-size: 12px; color: #ffcc00;">热量: <span id="player-heat-val">0</span>/150</span>
             </div>
-            
             <div style="margin-bottom: 8px;">
                 <label style="display: block; margin-bottom: 2px; font-size: 12px; color: #aaa;">
                     输入功率 (Pin): <span id="power-val" style="color:#fff; font-weight:bold;">10</span> MW
                 </label>
                 <input type="range" id="power-slider" min="0" max="40" step="1" value="10" style="width: 100%;" oninput="document.getElementById('power-val').innerText = this.value">
             </div>
-            
             <div style="display: flex; gap: 5px;">
                 <progress id="charge-bar" value="0" max="30" style="flex: 2; height: 8px; accent-color: #ffaa00; margin-top: 4px;"></progress>
                 <progress id="player-heat-bar" value="0" max="150" style="flex: 1; height: 8px; accent-color: #ffcc00; margin-top: 4px;"></progress>
