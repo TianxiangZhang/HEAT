@@ -61,7 +61,7 @@ class GameEngine {
     start() {
         if (this.isRunning) return;
         this.isRunning = true;
-        console.log("🚀 HEAT 引擎启动：精准雷达公式加载完毕...");
+        console.log("🚀 HEAT 引擎启动：外置乘区雷达公式（S型/三次方断崖）已部署...");
         this.initBattle();
         this.tickInterval = setInterval(() => { this.tick(); }, window.CONFIG.TICK_INTERVAL_MS);
     }
@@ -89,7 +89,7 @@ class GameEngine {
         this.tickCount++;
         const dt = window.CONFIG.TICK_INTERVAL_MS / 1000; 
 
-        // ---- Phase 6 核心：严格依据设计案公式解算雷达 ----
+        // ---- Phase 6.2 核心：外置乘区解析度公式 ----
         const distSlider = document.getElementById('dist-slider');
         const speedSlider = document.getElementById('speed-slider');
         if (distSlider && speedSlider) {
@@ -98,26 +98,29 @@ class GameEngine {
 
             const radarStrength = 15;        // 通用雷达强度
             const maxLockRange = 3000;       // 最远锁定距离
-            const bandMatch = 1.0;           // 频段匹配 (默认区间内)
+            const bandMatch = 1.0;           // 频段匹配度
+            const K = 900;                   // 多普勒宽容度 (Doppler Tolerance)
 
-            // 1. 多普勒扰动系数 = V_threshold / MAX(V_current, V_threshold)
-            const dopplerFactor = window.CONFIG.DOPPLER_THRESHOLD / Math.max(targetSpeed, window.CONFIG.DOPPLER_THRESHOLD);
+            // 步骤一：计算基础解析度 (剥离动态惩罚)
+            const baseEffectiveLock = radarStrength * bandMatch * this.enemyShip.baseSignature;
+            const baseResolution = (baseEffectiveLock / (baseEffectiveLock + 100)) * 100; // 约 81.818%
+
+            // 步骤二：计算多普勒扰动系数 (S型洛伦兹衰减)
+            const excessSpeed = Math.max(0, targetSpeed - window.CONFIG.DOPPLER_THRESHOLD);
+            const dopplerFactor = 1 / (1 + Math.pow(excessSpeed / K, 2));
             
-            // 2. 距离断崖惩罚：1.0 (射程内)；若超出射程 = (最远锁定距离 / 实际距离)^2
+            // 步骤三：计算距离惩罚系数 (三次方断崖)
             let distancePenalty = 1.0;
             if (distance > maxLockRange) {
-                distancePenalty = Math.pow(maxLockRange / distance, 2);
+                distancePenalty = Math.pow(maxLockRange / distance, 3);
             }
 
-            // 3. 有效锁定值 = (雷达解析强度 * 频段匹配 * 距离惩罚 * 目标信号半径) * 多普勒扰动系数
-            const effectiveLockValue = (radarStrength * bandMatch * distancePenalty * this.enemyShip.baseSignature) * dopplerFactor;
-            
-            // 4. 最终解析度 = 有效锁定值 / (有效锁定值 + 100)
-            const resolutionValue = (effectiveLockValue / (effectiveLockValue + 100)) * 100;
-            this.currentResolution = Math.min(100, Math.max(0, resolutionValue));
+            // 步骤四：最终结算
+            const finalResolution = baseResolution * dopplerFactor * distancePenalty;
+            this.currentResolution = Math.min(100, Math.max(0, finalResolution));
         }
 
-        // ---- 武器充能与热量管理 (保持不变) ----
+        // ---- 武器充能与热量管理 ----
         const powerSlider = document.getElementById('power-slider');
         if (!powerSlider) return; 
         const pIn = parseFloat(powerSlider.value);
